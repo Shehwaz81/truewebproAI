@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SEO Content Generator</title>
+  <link rel="stylesheet" href="/index.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1 class="title">SEO Content Generator</h1>
+      <p class="subtitle">Instantly generate SEO-friendly product descriptions & FAQs</p>
+    </header>
+
+    <main class="app-main">
+      <section class="card input-card">
+        <label for="productInfo" class="label">Enter Product Info</label>
+        <textarea id="productInfo" class="textarea" placeholder="e.g., Smartwatch, waterproof, long battery life" rows="5"></textarea>
+        <button id="generateBtn" class="btn-primary" onclick="generate()">⚡ Generate</button>
+      </section>
+
+      <section class="card output-card">
+        <h2 class="section-title">Generated Content</h2>
+        <div id="output" class="output-box">Your generated content will appear here...</div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>🚀 Powered by AI | Demo Project</p>
+    </footer>
+  </div>
+
+  <script>
+    async function generate() {
+      const productInfo = document.getElementById("productInfo").value.trim();
+      if (!productInfo) {
+        alert("Please enter product info before generating.");
+        return;
+      }
+      document.getElementById("output").innerHTML = "<p class='loading'>⏳ Generating...</p>";
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productInfo })
+        });
+        const data = await res.json();
+        document.getElementById("output").innerHTML = data.result;
+      } catch (err) {
+        document.getElementById("output").innerHTML = "<p class='error'>❌ Error generating content. Please try again.</p>";
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
