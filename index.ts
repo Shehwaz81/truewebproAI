@@ -1,13 +1,23 @@
 import express from "express";
-import { generateDescriptionAndFAQ } from "./openrouterService";
 import dotenv from "dotenv";
+import { generateDescriptionAndFAQ } from "./openrouterService";
+
+// Load environment variables immediately
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || "3000", 10);
 
-app.use(express.json());
+// Middleware
+app.use(express.json());           // parse JSON bodies
+app.use(express.static("public")); // serve static files from /public
 
+// Health check route (optional, good for Render)
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+// Main generate endpoint
 app.post("/generate", async (req, res) => {
   const { productInfo } = req.body;
 
@@ -18,14 +28,17 @@ app.post("/generate", async (req, res) => {
   try {
     const result = await generateDescriptionAndFAQ(productInfo);
     res.json({ result });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "OpenAI API call failed" });
+  } catch (err: any) {
+    console.error("OpenRouter API error:", err.response?.data || err.message);
+
+    res.status(500).json({
+      error: "OpenAI API call failed",
+      details: err.response?.data || err.message,
+    });
   }
 });
 
-app.use(express.static("public"));
-
-app.listen(port, () => {
-  console.log(`OpenAI generation service running on port ${port} (http://localhost:${port})`);
+// Bind to 0.0.0.0 for Render deployment
+app.listen(port, "0.0.0.0", () => {
+  console.log(`OpenAI generation service running on port ${port}`);
 });
