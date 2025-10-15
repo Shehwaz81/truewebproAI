@@ -50,7 +50,7 @@ Do NOT include any Markdown code block formatting (no triple backticks or langua
     {
       headers: {
         Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://your-app.vercel.app", // optional but recommended
+        "HTTP-Referer": "http://localhost:3000", // optional but recommended
         "X-Title": "AI Demo App", // optional
         "Content-Type": "application/json",
       },
