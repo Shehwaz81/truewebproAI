@@ -50,7 +50,7 @@ Do NOT include any Markdown code block formatting (no triple backticks or langua
     {
       headers: {
         Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "http://localhost:3000", // optional but recommended
+        "HTTP-Referer": process.env.RENDER_EXTERNAL_URL || "https://truewebproai.onrender.com",
         "X-Title": "AI Demo App", // optional
         "Content-Type": "application/json",
       },
