@@ -17,31 +17,34 @@ export const generateDescriptionAndFAQ = async (
 ) => {
   const typeString = type.join(', ') // turns the array of strings into one singular string that is comma seperated
   const prompt = `
-You are a world class SEO AI that generates SEO-friendly content for products.
+    You are a world class SEO AI that generates SEO-friendly content for products.
 
-Product Title: ${productTitle}
-Keywords: ${keywords}
+    Product titles:
+    ${productTitle}
 
-Generate only the following types as structured JSON: ${typeString}
+    Keywords:
+    ${keywords}
 
-Output format example (only include fields requested in "types"):
+    Types requested:
+    ${typeString}
 
-{
-  "description": "Product description here...",
-  "features": [
-    "Feature 1",
-    "Feature 2",
-    "Feature 3"
-  ],
-  "faqs": [
-    {"q": "Question 1?", "a": "Answer 1"},
-    {"q": "Question 2?", "a": "Answer 2"}
-  ]
-}
+    Output instructions:
+    - ONLY output a valid JSON object.
+    - Do NOT include any Markdown formatting, code blocks, or extra text.
+    - Output should be neatly formated for curl requests and API calls
+    - The JSON should follow this structure:
 
-- Only include the types requested.
-- Output valid JSON, nothing else.
-`;
+    {
+      "description": "...",
+      "features": ["feature1", "feature2", "..."],
+      "faqs": [
+        {"q": "question1", "a": "answer1"},
+        {"q": "question2", "a": "answer2"}
+      ]
+    }
+
+    Generate only the types requested in the "type" array. (${typeString}")
+  `;
 
 
   try {
