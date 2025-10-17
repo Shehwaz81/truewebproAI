@@ -9,69 +9,366 @@
 <body>
   <div class="app-container">
     <header class="app-header">
-      <h1 class="title">SEO Content Generator</h1>
-      <p class="subtitle">Instantly generate SEO-friendly product descriptions, FAQs, and more</p>
+      <div class="header-content">
+        <h1 class="title">SEO Content Generator</h1>
+        <p class="subtitle">Instantly generate SEO-friendly product descriptions, FAQs, and more</p>
+      </div>
     </header>
 
     <main class="app-main">
       <section class="card input-card">
-        <label for="productTitle" class="label">Product Title</label>
-        <input id="productTitle" class="input" type="text" placeholder="e.g., Smart Vape 3000" />
+        <div class="form-group">
+          <label for="productTitle" class="label">Product Title *</label>
+          <input id="productTitle" class="input" type="text" placeholder="e.g., Smart Vape 3000" />
+        </div>
 
-        <label for="keywords" class="label">Keywords</label>
-        <textarea id="keywords" class="textarea" placeholder="e.g., portable, rechargeable, long battery life" rows="3"></textarea>
+        <div class="form-group">
+          <label for="keywords" class="label">Keywords *</label>
+          <textarea id="keywords" class="textarea" placeholder="e.g., portable, rechargeable, long battery life" rows="3"></textarea>
+          <div class="char-count"><span id="keywordsCount">0</span>/200</div>
+        </div>
 
-        <label for="type" class="label">Type (what to generate)</label>
-        <input id="type" class="input" type="text" placeholder='e.g., "FAQ", "Description" (Comma seperated)' />
+        <div class="form-group">
+          <label for="type" class="label">Content Type *</label>
+          <div class="type-selector">
+            <div class="type-option" data-type="description">Description</div>
+            <div class="type-option" data-type="faq">FAQ</div>
+            <div class="type-option" data-type="features">Features</div>
+            <div class="type-option" data-type="all">All</div>
+          </div>
+          <input id="type" type="hidden" />
+        </div>
 
-        <button id="generateBtn" class="btn-primary" onclick="generate()">⚡ Generate</button>
+        <button id="generateBtn" class="btn-primary" type="button">
+          <span class="btn-text">⚡ Generate Content</span>
+          <div class="btn-loader" style="display: none;">
+            <div class="spinner"></div>
+            <span>Generating...</span>
+          </div>
+        </button>
       </section>
 
       <section class="card output-card">
-        <h2 class="section-title">Generated Content</h2>
-        <div id="output" class="output-box">Your generated content will appear here...</div>
+        <div class="output-header">
+          <h2 class="section-title">Generated Content</h2>
+          <button id="copyBtn" class="btn-secondary" style="display: none;" type="button">
+            📋 Copy All
+          </button>
+        </div>
+        <div id="output" class="output-box">
+          <!-- Placeholder -->
+          <div id="placeholder" class="placeholder">
+            <div class="placeholder-icon">✨</div>
+            <p>Your SEO-optimized content will appear here</p>
+            <small>Fill in the form and click generate to get started</small>
+          </div>
+
+          <!-- Generated Content Container -->
+          <div id="generated-content-container" class="generated-content-container" style="display: none;">
+            <!-- Description -->
+            <div id="description-section" class="content-section">
+              <div class="section-header">
+                <h3 class="section-title">Product Description</h3>
+                <button class="copy-section-btn" data-section="description">📋 Copy</button>
+              </div>
+              <div id="description" class="content-text"></div>
+            </div>
+
+            <!-- Features -->
+            <div id="features-section" class="content-section">
+              <div class="section-header">
+                <h3 class="section-title">Key Features</h3>
+                <button class="copy-section-btn" data-section="features">📋 Copy</button>
+              </div>
+              <ul id="features" class="features-list"></ul>
+            </div>
+
+            <!-- FAQs -->
+            <div id="faqs-section" class="content-section">
+              <div class="section-header">
+                <h3 class="section-title">Frequently Asked Questions</h3>
+                <button class="copy-section-btn" data-section="faqs">📋 Copy</button>
+              </div>
+              <div id="faqs" class="faqs-container"></div>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div id="loading-state" class="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <p>Crafting your SEO content...</p>
+          </div>
+
+          <!-- Error -->
+          <div id="error-state" class="error-state" style="display: none;">
+            <div class="error-icon">❌</div>
+            <p>Error generating content</p>
+            <small>Please try again in a moment</small>
+          </div>
+        </div>
       </section>
     </main>
-
-    <footer class="app-footer">
-      <p>🚀 Powered by AI | Demo Project</p>
-    </footer>
   </div>
 
   <script>
-    async function generate() {
-      const productTitle = document.getElementById("productTitle").value.trim();
-      const keywords = document.getElementById("keywords").value.trim();
-      const typeInput = document.getElementById("type").value.trim();
-      const typeArray = typeInput.split(",").map(t => t.trim()).filter(Boolean);
+    document.addEventListener('DOMContentLoaded', () => {
+      const productTitle = document.getElementById("productTitle");
+      const keywords = document.getElementById("keywords");
+      const typeInput = document.getElementById("type");
+      const output = document.getElementById("output");
+      const copyBtn = document.getElementById("copyBtn");
+      const generateBtn = document.getElementById("generateBtn");
+      const keywordsCount = document.getElementById("keywordsCount");
+      const placeholder = document.getElementById("placeholder");
+      const generatedContentContainer = document.getElementById("generated-content-container");
 
-      if (!productTitle || !keywords || !typeArray.length) {
-        alert("Please fill out all fields before generating.");
-        return;
-      }
+      const btnText = generateBtn.querySelector('.btn-text');
+      const btnLoader = generateBtn.querySelector('.btn-loader');
 
-      const body = {
-        productTitle,
-        keywords,
-        type: typeArray
-      };
-      document.getElementById("output").innerHTML = "<p class='loading'>⏳ Generating...</p>";
+      // Type selector
+      document.querySelectorAll('.type-option').forEach(option => {
+        option.addEventListener('click', function() {
+          const allOption = document.querySelector('.type-option[data-type="all"]');
 
-      try {
-        const res = await fetch("/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
+          if (this.dataset.type === 'all') {
+            document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            typeInput.value = JSON.stringify(['faq', 'description', 'features']);
+          } else {
+            allOption.classList.remove('active');
+            this.classList.toggle('active');
+            const selectedTypes = Array.from(document.querySelectorAll('.type-option.active')).map(opt => opt.dataset.type);
+            typeInput.value = JSON.stringify(selectedTypes);
+          }
         });
+      });
 
-        const data = await res.json();
-        document.getElementById("output").innerHTML = data.result || "<p>No result returned.</p>";
-      } catch (err) {
-        document.getElementById("output").innerHTML = "<p class='error'>❌ Error generating content. Please try again.</p>";
-        console.error(err);
+      // Character count
+      keywords.addEventListener('input', function() {
+        const count = this.value.length;
+        keywordsCount.textContent = count;
+        this.style.borderColor = count > 200 ? '#ef4444' : '';
+      });
+
+      // Copy all content
+      copyBtn.addEventListener('click', function() {
+        const content = getFormattedContentForCopy();
+        navigator.clipboard.writeText(content).then(() => {
+          const original = this.innerHTML;
+          this.innerHTML = '✓ Copied!';
+          setTimeout(() => this.innerHTML = original, 2000);
+        });
+      });
+
+      // Copy section content
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('copy-section-btn')) {
+          const sectionType = e.target.dataset.section;
+          const content = getSectionContentForCopy(sectionType);
+          
+          navigator.clipboard.writeText(content).then(() => {
+            const original = e.target.innerHTML;
+            e.target.innerHTML = '✓ Copied!';
+            setTimeout(() => e.target.innerHTML = original, 2000);
+          });
+        }
+      });
+
+      // Error toast
+      function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-toast';
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
       }
-    }
+
+      // Generate
+      async function generate() {
+        let selectedType = [];
+        try { selectedType = JSON.parse(typeInput.value || "[]"); } catch {}
+        console.log(selectedType);
+        const title = productTitle.value.trim();
+        const keywordText = keywords.value.trim();
+
+        if (!title || !keywordText || selectedType.length === 0) {
+          showError("Please fill out all required fields");
+          return;
+        }
+        if (keywordText.length > 200) {
+          showError("Keywords exceed 200 character limit");
+          return;
+        }
+
+        // Reset UI
+        ["description-section", "features-section", "faqs-section", "error-state"].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.style.display = "none";
+        });
+        placeholder.style.display = "none";
+        generatedContentContainer.style.display = "none";
+        document.getElementById("loading-state").style.display = "block";
+        copyBtn.style.display = "none";
+
+        // Button loading state
+        generateBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoader.style.display = 'flex';
+
+        const body = {
+          productTitle: title, keywords: keywordText, type: selectedType
+        }
+
+        try {
+          const res = await fetch("/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+
+          if (!res.ok) throw new Error("Network response not ok");
+
+          const data = await res.json();
+          document.getElementById("loading-state").style.display = "none";
+
+          const { description, features, faqs } = data.result || {};
+
+          let hasOutput = false;
+
+          if (description) {
+            const descSection = document.getElementById("description-section");
+            document.getElementById("description").textContent = description;
+            descSection.style.display = "block";
+            hasOutput = true;
+          }
+          if (Array.isArray(features) && features.length > 0) {
+            const featSection = document.getElementById("features-section");
+            const ul = document.getElementById("features");
+            ul.innerHTML = "";
+            features.forEach(f => {
+              const li = document.createElement("li");
+              li.innerHTML = `<span class="feature-icon">✓</span> ${f}`;
+              ul.appendChild(li);
+            });
+            featSection.style.display = "block";
+            hasOutput = true;
+          }
+          if (Array.isArray(faqs) && faqs.length > 0) {
+            const faqSection = document.getElementById("faqs-section");
+            const faqDiv = document.getElementById("faqs");
+            faqDiv.innerHTML = "";
+            faqs.forEach(f => {
+              const faqItem = document.createElement("div");
+              faqItem.className = "faq-item";
+              faqItem.innerHTML = `
+                <div class="faq-question">
+                  <span class="faq-icon">?</span>
+                  <h4>${f.q}</h4>
+                </div>
+                <div class="faq-answer">
+                  <span class="faq-icon">A</span>
+                  <p>${f.a}</p>
+                </div>
+              `;
+              faqDiv.appendChild(faqItem);
+            });
+            faqSection.style.display = "block";
+            hasOutput = true;
+          }
+
+          if (hasOutput) {
+            generatedContentContainer.style.display = "block";
+            copyBtn.style.display = "flex";
+          } else {
+            placeholder.style.display = "block";
+          }
+
+        } catch (err) {
+          console.error(err);
+          document.getElementById("loading-state").style.display = "none";
+          document.getElementById("error-state").style.display = "block";
+        } finally {
+          generateBtn.disabled = false;
+          btnText.style.display = 'block';
+          btnLoader.style.display = 'none';
+        }
+      }
+
+      // Helper function to get formatted content for copying
+      function getFormattedContentForCopy() {
+        let content = "";
+        
+        // Description
+        const description = document.getElementById("description");
+        if (description && description.textContent) {
+          content += "PRODUCT DESCRIPTION:\n\n";
+          content += description.textContent + "\n\n";
+        }
+        
+        // Features
+        const features = document.getElementById("features");
+        if (features && features.children.length > 0) {
+          content += "KEY FEATURES:\n\n";
+          Array.from(features.children).forEach(li => {
+            content += `• ${li.textContent.replace('✓', '').trim()}\n`;
+          });
+          content += "\n";
+        }
+        
+        // FAQs
+        const faqs = document.getElementById("faqs");
+        if (faqs && faqs.children.length > 0) {
+          content += "FREQUENTLY ASKED QUESTIONS:\n\n";
+          Array.from(faqs.children).forEach(faqItem => {
+            const question = faqItem.querySelector('h4').textContent;
+            const answer = faqItem.querySelector('p').textContent;
+            content += `Q: ${question}\n`;
+            content += `A: ${answer}\n\n`;
+          });
+        }
+        
+        return content;
+      }
+
+      // Helper function to get section content for copying
+      function getSectionContentForCopy(sectionType) {
+        let content = "";
+        
+        switch(sectionType) {
+          case 'description':
+            const description = document.getElementById("description");
+            if (description) content = description.textContent;
+            break;
+            
+          case 'features':
+            const features = document.getElementById("features");
+            if (features && features.children.length > 0) {
+              Array.from(features.children).forEach(li => {
+                content += `• ${li.textContent.replace('✓', '').trim()}\n`;
+              });
+            }
+            break;
+            
+          case 'faqs':
+            const faqs = document.getElementById("faqs");
+            if (faqs && faqs.children.length > 0) {
+              Array.from(faqs.children).forEach(faqItem => {
+                const question = faqItem.querySelector('h4').textContent;
+                const answer = faqItem.querySelector('p').textContent;
+                content += `Q: ${question}\n`;
+                content += `A: ${answer}\n\n`;
+              });
+            }
+            break;
+        }
+        console.log(data.result.description);
+        console.log(data.result.features);
+        console.log(data.result.faqs);
+        return content;
+      }
+
+      generateBtn.addEventListener('click', generate);
+    });
   </script>
 </body>
 </html>
-

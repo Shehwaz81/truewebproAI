@@ -15,37 +15,36 @@ export const generateDescriptionAndFAQ = async (
   keywords: string,
   type: string[]
 ) => {
-  const typeString = type.join(', ') // turns the array of strings into one singular string that is comma seperated
+  const typeString = type.join(', '); // array → comma separated string
+
   const prompt = `
-    You are a world class SEO AI that generates SEO-friendly content for products.
+You are a world-class SEO AI that generates SEO-friendly content for products.
 
-    Product titles:
-    ${productTitle}
+Product title:
+${productTitle}
 
-    Keywords:
-    ${keywords}
+Keywords:
+${keywords}
 
-    Types requested:
-    ${typeString}
+Types requested:
+${typeString}
 
-    Output instructions:
-    - ONLY output a valid JSON object.
-    - Do NOT include any Markdown formatting, code blocks, or extra text.
-    - Output should be neatly formated for curl requests and API calls
-    - The JSON should follow this structure:
+Output instructions:
+- ONLY output a valid JSON object.
+- Do NOT include any Markdown formatting, code blocks, or extra text.
+- The JSON should follow this structure:
 
-    {
-      "description": "...",
-      "features": ["feature1", "feature2", "..."],
-      "faqs": [
-        {"q": "question1", "a": "answer1"},
-        {"q": "question2", "a": "answer2"}
-      ]
-    }
+{
+  "description": "...",
+  "features": ["feature1", "feature2", "..."],
+  "faqs": [
+    {"q": "question1", "a": "answer1"},
+    {"q": "question2", "a": "answer2"}
+  ]
+}
 
-    Generate only the types requested in the "type" array. (${typeString}")
-  `;
-
+Generate ONLY the types requested in the "type" array: (${typeString})
+`;
 
   try {
     const response = await axios.post(
@@ -60,16 +59,23 @@ export const generateDescriptionAndFAQ = async (
           Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
           "X-Title": "AI Demo App",
-          // Render automatically sets the correct referer, but you can keep it
           "HTTP-Referer": process.env.RENDER_EXTERNAL_URL || "https://truewebproai.onrender.com",
         },
-        timeout: 15000, // 15 seconds
+        timeout: 30000, // 30 seconds to allow longer content
       }
     );
 
-    return response.data.choices?.[0]?.message?.content || "Failed to fetch content!";
+    // Get raw AI output
+    let content = response.data.choices?.[0]?.message?.content || '';
+
+    // Remove code block formatting if present
+    content = content.replace(/```json|```/g, '').trim();
+
+    const result = JSON.parse(content);
+
+    return result; // now it's proper JSON, not a string
   } catch (err: any) {
     console.error("OpenRouter API error:", err.response?.data || err.message);
     throw new Error(err.response?.data?.error?.message || err.message);
   }
-}
+};
