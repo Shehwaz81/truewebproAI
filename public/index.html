@@ -10,13 +10,20 @@
   <div class="app-container">
     <header class="app-header">
       <h1 class="title">SEO Content Generator</h1>
-      <p class="subtitle">Instantly generate SEO-friendly product descriptions & FAQs</p>
+      <p class="subtitle">Instantly generate SEO-friendly product descriptions, FAQs, and more</p>
     </header>
 
     <main class="app-main">
       <section class="card input-card">
-        <label for="productInfo" class="label">Enter Product Info</label>
-        <textarea id="productInfo" class="textarea" placeholder="e.g., Smartwatch, waterproof, long battery life" rows="5"></textarea>
+        <label for="productTitle" class="label">Product Title</label>
+        <input id="productTitle" class="input" type="text" placeholder="e.g., Smart Vape 3000" />
+
+        <label for="keywords" class="label">Keywords</label>
+        <textarea id="keywords" class="textarea" placeholder="e.g., portable, rechargeable, long battery life" rows="3"></textarea>
+
+        <label for="type" class="label">Type (what to generate)</label>
+        <input id="type" class="input" type="text" placeholder='e.g., "FAQ", "Description" (Comma seperated)' />
+
         <button id="generateBtn" class="btn-primary" onclick="generate()">⚡ Generate</button>
       </section>
 
@@ -33,20 +40,32 @@
 
   <script>
     async function generate() {
-      const productInfo = document.getElementById("productInfo").value.trim();
-      if (!productInfo) {
-        alert("Please enter product info before generating.");
+      const productTitle = document.getElementById("productTitle").value.trim();
+      const keywords = document.getElementById("keywords").value.trim();
+      const typeInput = document.getElementById("type").value.trim();
+      const typeArray = typeInput.split(",").map(t => t.trim()).filter(Boolean);
+
+      if (!productTitle || !keywords || !typeArray.length) {
+        alert("Please fill out all fields before generating.");
         return;
       }
+
+      const body = {
+        productTitle,
+        keywords,
+        type: typeArray
+      };
       document.getElementById("output").innerHTML = "<p class='loading'>⏳ Generating...</p>";
+
       try {
         const res = await fetch("/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productInfo })
+          body: JSON.stringify(body)
         });
+
         const data = await res.json();
-        document.getElementById("output").innerHTML = data.result;
+        document.getElementById("output").innerHTML = data.result || "<p>No result returned.</p>";
       } catch (err) {
         document.getElementById("output").innerHTML = "<p class='error'>❌ Error generating content. Please try again.</p>";
         console.error(err);
@@ -55,3 +74,4 @@
   </script>
 </body>
 </html>
+

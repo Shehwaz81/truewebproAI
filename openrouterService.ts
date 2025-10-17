@@ -10,41 +10,39 @@ if (!OPENROUTER_API_KEY) {
   throw new Error("OPENROUTER_API_KEY is not set in .env!");
 }
 
-export async function generateDescriptionAndFAQ(productInfo: string) {
+export const generateDescriptionAndFAQ = async (
+  productTitle: string,
+  keywords: string,
+  type: string[]
+) => {
+  const typeString = type.join(', ') // turns the array of strings into one singular string that is comma seperated
   const prompt = `
-Product Information and keywords:
-${productInfo}
+You are a world class SEO AI that generates SEO-friendly content for products.
 
-Write a short, SEO-optimized product description (under 60 words) and format it as HTML.
-Do NOT include any Markdown code block formatting (no triple backticks or language tags). Output only valid HTML.
+Product Title: ${productTitle}
+Keywords: ${keywords}
 
-1. Main Product Description:
-   - Wrap the product name or main heading in <h2>.
-   - Add a product description in <p> with approximately 300 words.
+Generate only the following types as structured JSON: ${typeString}
 
-2. Product Features:
-   - Add a <h2> heading named "{product name} features".
-   - Include at least 5 product features.
-     - For each feature:
-       - Use <h3> for the feature name.
-       - Include a thorough description in <p> around 300 words.
+Output format example (only include fields requested in "types"):
 
-3. FAQs:
-   - Add a <h2> section called "{product name} FAQs".
-   - Include a minimum of 6 FAQs.
-     - For each FAQ:
-       - Put the question in <h3>.
-       - Put the answer in <p> with around 100 words.
+{
+  "description": "Product description here...",
+  "features": [
+    "Feature 1",
+    "Feature 2",
+    "Feature 3"
+  ],
+  "faqs": [
+    {"q": "Question 1?", "a": "Answer 1"},
+    {"q": "Question 2?", "a": "Answer 2"}
+  ]
+}
 
-4. Additional Instructions:
-   - Add internal links to other related products or categories where appropriate.
-   - Use external links to authoritative sources if relevant.
-   - Include pictures of product if possible.
-
-5. Output:
-   - Only valid HTML.
-   - Do not include any extra explanation or text outside the HTML.
+- Only include the types requested.
+- Output valid JSON, nothing else.
 `;
+
 
   try {
     const response = await axios.post(

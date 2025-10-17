@@ -19,14 +19,14 @@ app.get("/health", (_req, res) => {
 
 // Main generate endpoint
 app.post("/generate", async (req, res) => {
-  const { productInfo } = req.body;
+  const { productTitle, keywords, type} = req.body;
 
-  if (!productInfo) {
+  if (!productTitle || !keywords || !type.length) {
     return res.status(400).json({ error: "Missing productInfo" });
   }
 
   try {
-    const result = await generateDescriptionAndFAQ(productInfo);
+    const result = await generateDescriptionAndFAQ(productTitle, keywords, type);
     res.json({ result });
   } catch (err: any) {
     console.error("OpenRouter API error:", err.response?.data || err.message);
