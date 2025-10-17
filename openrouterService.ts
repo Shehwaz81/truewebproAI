@@ -15,7 +15,15 @@ export const generateDescriptionAndFAQ = async (
   keywords: string,
   type: string[]
 ) => {
-  const typeString = type.join(', '); // array → comma separated string
+  // Normalize type names to be consistent
+  const normalizedTypes = type.map(t => {
+    if (t === 'faq') return 'faqs';
+    else if (t === 'descriptions') return 'description';
+    else if (t == 'feature') return 'features';
+    return t;
+  });
+  
+  const typeString = normalizedTypes.join(', ');
 
   const prompt = `
 You are a world-class SEO AI that generates SEO-friendly content for products.
@@ -26,24 +34,24 @@ ${productTitle}
 Keywords:
 ${keywords}
 
-Types requested:
-${typeString}
+Types requested: ${typeString}
+
+IMPORTANT: Generate ONLY the types listed above. Do NOT generate any types that are not in the list.
 
 Output instructions:
 - ONLY output a valid JSON object.
 - Do NOT include any Markdown formatting, code blocks, or extra text.
-- The JSON should follow this structure:
+- The JSON structure should contain ONLY the keys for the requested types.
 
-{
-  "description": "...",
-  "features": ["feature1", "feature2", "..."],
-  "faqs": [
-    {"q": "question1", "a": "answer1"},
-    {"q": "question2", "a": "answer2"}
-  ]
-}
+Available types and their structures:
+1. "description": A string containing the product description
+2. "features": An array of feature strings
+3. "faqs": An array of question-answer objects
 
-Generate ONLY the types requested in the "type" array: (${typeString})
+${buildStructureExamples(normalizedTypes)}
+
+Generate content for EXACTLY these types: ${typeString}
+Do not include any other types in your output.
 `;
 
   try {
@@ -61,21 +69,57 @@ Generate ONLY the types requested in the "type" array: (${typeString})
           "X-Title": "AI Demo App",
           "HTTP-Referer": process.env.RENDER_EXTERNAL_URL || "https://truewebproai.onrender.com",
         },
-        timeout: 30000, // 30 seconds to allow longer content
+        timeout: 30000,
       }
     );
 
-    // Get raw AI output
     let content = response.data.choices?.[0]?.message?.content || '';
-
-    // Remove code block formatting if present
     content = content.replace(/```json|```/g, '').trim();
 
     const result = JSON.parse(content);
+    
+    // Validate that only requested types are present
+    const validatedResult: any = {};
+    normalizedTypes.forEach(requestedType => {
+      if (result[requestedType] !== undefined) {
+        validatedResult[requestedType] = result[requestedType];
+      }
+    });
 
-    return result; // now it's proper JSON, not a string
-  } catch (err: any) {
-    console.error("OpenRouter API error:", err.response?.data || err.message);
-    throw new Error(err.response?.data?.error?.message || err.message);
+    return validatedResult;
+
+  } catch (error) {
+    console.error('Error generating content:', error);
+    throw new Error('Failed to generate SEO content');
   }
 };
+
+// Helper function to build structure examples based on requested types
+function buildStructureExamples(types: string[]): string {
+  const examples: string[] = [];
+  
+  if (types.includes('description')) {
+    examples.push(`- If "description" is requested: {"description": "Your product description here"}`);
+  }
+  
+  if (types.includes('features')) {
+    examples.push(`- If "features" is requested: {"features": ["Feature 1", "Feature 2", "Feature 3"]}`);
+  }
+  
+  if (types.includes('faqs')) {
+    examples.push(`- If "faqs" is requested: {"faqs": [{"q": "Question 1?", "a": "Answer 1"}, {"q": "Question 2?", "a": "Answer 2"}]}`);
+  }
+  
+  // Add combination examples
+  if (types.length > 1) {
+    const comboExample: any = {};
+    types.forEach(t => {
+      if (t === 'description') comboExample.description = "Your product description here";
+      if (t === 'features') comboExample.features = ["Feature 1", "Feature 2"];
+      if (t === 'faqs') comboExample.faqs = [{"q": "Sample question?", "a": "Sample answer"}];
+    });
+    examples.push(`- For multiple types ${JSON.stringify(types)}: ${JSON.stringify(comboExample)}`);
+  }
+  
+  return "Example JSON structures:\n" + examples.join('\n');
+}
