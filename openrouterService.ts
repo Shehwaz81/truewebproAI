@@ -37,6 +37,7 @@ ${keywords}
 Types requested: ${typeString}
 
 IMPORTANT: Generate ONLY the types listed above. Do NOT generate any types that are not in the list.
+Always generate a title/header like this {"header": ${productTitle}} and make it SEO optimized.
 
 Output instructions:
 - ONLY output a valid JSON object.
@@ -44,14 +45,19 @@ Output instructions:
 - The JSON structure should contain ONLY the keys for the requested types.
 
 Available types and their structures:
-1. "description": A string containing the product description
-2. "features": An array of feature strings
-3. "faqs": An array of question-answer objects
-
+1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases).
+2. "features": An array of feature strings (each feature around 100 words, SEO-focused).
+3. "faqs": An array of question-answer objects (3-5 FAQs, each answer at least 40 words, address common concerns and advantages).
+4. "metaTitle": A string for an SEO-friendly meta title (max 60 characters, include main keyword and product name).
+5. "metaDescription": A string for an SEO-friendly meta description (max 160 characters, summarize value and include primary keywords).
 ${buildStructureExamples(normalizedTypes)}
 
 Generate content for EXACTLY these types: ${typeString}
 Do not include any other types in your output.
+
+Formatting:
+- Use clear keys for each section: description, features, faqs, metaTitle, metaDescription.
+- Ensure content is original and avoids keyword stuffing.
 `;
 
   try {
@@ -99,15 +105,30 @@ function buildStructureExamples(types: string[]): string {
   const examples: string[] = [];
   
   if (types.includes('description')) {
-    examples.push(`- If "description" is requested: {"description": "Your product description here"}`);
+    examples.push(
+      `- If "description" is requested: {"description": "Your product description here"}. Make sure the description is around 150 words`
+    );
   }
   
   if (types.includes('features')) {
-    examples.push(`- If "features" is requested: {"features": ["Feature 1", "Feature 2", "Feature 3"]}`);
+    examples.push(
+      `- If "features" is requested: {"features": ["Feature 1", "Feature 2", "Feature 3"]}. Each feature must be around 100 words`);
   }
   
   if (types.includes('faqs')) {
-    examples.push(`- If "faqs" is requested: {"faqs": [{"q": "Question 1?", "a": "Answer 1"}, {"q": "Question 2?", "a": "Answer 2"}]}`);
+    examples.push(`- If "faqs" is requested: {"faqs": [{"q": "Question 1?", "a": "Answer 1"}, {"q": "Question 2?", "a": "Answer 2"}]}. The answer must be in around 100 words.`);
+  }
+  
+  if (types.includes('metaTitle')) {
+    examples.push(
+      `- If "metaTitle" is requested: {"metaTitle": "SEO-friendly meta title here (max 60 characters)"}`
+    );
+  }
+
+  if (types.includes('metaDescription')) {
+    examples.push(
+      `- If "metaDescription" is requested: {"metaDescription": "SEO-friendly meta description here (max 160 characters)"}`
+    );
   }
   
   // Add combination examples
@@ -117,6 +138,8 @@ function buildStructureExamples(types: string[]): string {
       if (t === 'description') comboExample.description = "Your product description here";
       if (t === 'features') comboExample.features = ["Feature 1", "Feature 2"];
       if (t === 'faqs') comboExample.faqs = [{"q": "Sample question?", "a": "Sample answer"}];
+      if (t === 'metaTitle') comboExample.metaTitle = "SEO-friendly meta title here";
+      if (t === 'metaDescription') comboExample.metaDescription = "SEO-friendly meta description here";
     });
     examples.push(`- For multiple types ${JSON.stringify(types)}: ${JSON.stringify(comboExample)}`);
   }
