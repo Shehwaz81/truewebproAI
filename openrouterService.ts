@@ -26,39 +26,39 @@ export const generateDescriptionAndFAQ = async (
   const typeString = normalizedTypes.join(', ');
 
   const prompt = `
-You are a world-class SEO AI that generates SEO-friendly content for products.
+    You are a world-class SEO AI that generates SEO-friendly content for products.
 
-Product title:
-${productTitle}
+    Product title:
+    ${productTitle}
 
-Keywords:
-${keywords}
+    Keywords:
+    ${keywords}
 
-Types requested: ${typeString}
+    Types requested: ${typeString}
 
-IMPORTANT: Generate ONLY the types listed above. Do NOT generate any types that are not in the list.
-Always generate a title/header like this {"header": ${productTitle}} and make it SEO optimized.
+    IMPORTANT: Generate ONLY the types listed above. Do NOT generate any types that are not in the list.
+    Always generate a title/header like this {"header": ${productTitle}} and make it SEO optimized.
 
-Output instructions:
-- ONLY output a valid JSON object.
-- Do NOT include any Markdown formatting, code blocks, or extra text.
-- The JSON structure should contain ONLY the keys for the requested types.
+    Output instructions:
+    - ONLY output a valid JSON object.
+    - Do NOT include any Markdown formatting, code blocks, or extra text.
+    - The JSON structure should contain ONLY the keys for the requested types.
 
-Available types and their structures:
-1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases).
-2. "features": An array of feature strings (each feature around 100 words, SEO-focused).
-3. "faqs": An array of question-answer objects (3-5 FAQs, each answer at least 40 words, address common concerns and advantages).
-4. "metaTitle": A string for an SEO-friendly meta title (max 60 characters, include main keyword and product name).
-5. "metaDescription": A string for an SEO-friendly meta description (max 160 characters, summarize value and include primary keywords).
-${buildStructureExamples(normalizedTypes)}
+    Available types and their structures:
+    1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases).
+    2. "features": An array of feature strings (each feature around 100 words, SEO-focused).
+    3. "faqs": An array of question-answer objects (3-5 FAQs, each answer at least 40 words, address common concerns and advantages).
+    4. "metaTitle": A string for an SEO-friendly meta title (max 60 characters, include main keyword and product name).
+    5. "metaDescription": A string for an SEO-friendly meta description (max 160 characters, summarize value and include primary keywords).
+    ${buildStructureExamples(normalizedTypes)}
 
-Generate content for EXACTLY these types: ${typeString}
-Do not include any other types in your output.
+    Generate content for EXACTLY these types: ${typeString}
+    Do not include any other types in your output.
 
-Formatting:
-- Use clear keys for each section: description, features, faqs, metaTitle, metaDescription.
-- Ensure content is original and avoids keyword stuffing.
-`;
+    Formatting:
+    - Use clear keys for each section: description, features, faqs, metaTitle, metaDescription.
+    - Ensure content is original and avoids keyword stuffing.
+  `;
 
   try {
     const response = await axios.post(
