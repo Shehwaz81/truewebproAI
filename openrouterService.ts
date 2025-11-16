@@ -46,11 +46,12 @@ export const generateDescriptionAndFAQ = async (
 
     Available types and their structures:
     1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases).
-    2. "features": An array of feature strings (each feature around 100 words, SEO-focused).
-    3. "faqs": An array of question-answer objects (3-5 FAQs, each answer at least 40 words, address common concerns and advantages).
-    4. "bulletFeature": An array of 10 short bullet features, each 10-15 words, highlighting unique selling points or benefits.
-    5. "metaTitle": A string for an SEO-friendly meta title (max 60 characters, include main keyword and product name).
-    6. "metaDescription": A string for an SEO-friendly meta description (max 160 characters, summarize value and include primary keywords).
+    2. "shortDescription": A string containing a brief description and overview of the product, features, and what it does (25-35 words). Use relevent keywords and make it sound natural.
+    3. "features": An array of feature strings (each feature around 100 words, SEO-focused).
+    4. "faqs": An array of question-answer objects (3-5 FAQs, each answer at least 40 words, address common concerns and advantages).
+    5. "bulletFeature": An array of 10 short bullet features, each 10-15 words, highlighting unique selling points or benefits.
+    6. "metaTitle": A string for an SEO-friendly meta title (max 60 characters, include main keyword and product name).
+    7. "metaDescription": A string for an SEO-friendly meta description (max 160 characters, summarize value and include primary keywords).
     ${buildStructureExamples(normalizedTypes)}
 
     Generate content for EXACTLY these types: ${typeString}
@@ -117,6 +118,11 @@ function buildStructureExamples(types: string[]): string {
       `- If "description" is requested: {"description": "Your product description here"}. Make sure the description is 100-150 words`
     );
   }
+  if (types.includes("shortDescription")) {
+    examples.push(
+      `If "shortDescription" is requested: {"shortDescription": "Your product description here"}. Make sure the short description is 25-35 words`
+    )
+  }
   
   if (types.includes('features')) {
     examples.push(
@@ -129,13 +135,13 @@ function buildStructureExamples(types: string[]): string {
   
   if (types.includes('metaTitle')) {
     examples.push(
-      `- If "metaTitle" is requested: {"metaTitle": "SEO-friendly meta title here (under 60 words)"}`
+      `- If "metaTitle" is requested: {"metaTitle": "SEO-friendly meta title here (around 60 characters)"}`
     );
   }
 
   if (types.includes('metaDescription')) {
     examples.push(
-      `- If "metaDescription" is requested: {"metaDescription": "SEO-friendly meta description here (under 160 words)"}`
+      `- If "metaDescription" is requested: {"metaDescription": "SEO-friendly meta description here (around 150 characters)"}`
     );
   }
   

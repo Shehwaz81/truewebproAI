@@ -32,6 +32,7 @@
           <label for="type" class="label">Content Type *</label>
           <div class="type-selector">
             <div class="type-option" data-type="description">Description</div>
+            <div class="type-option" data-type="shortDescription">Short Description</div>
             <div class="type-option" data-type="faq">FAQ</div>
             <div class="type-option" data-type="features">Features</div>
             <div class="type-option" data-type="bulletFeature">Bullet Features</div>
@@ -75,6 +76,13 @@
                 <button class="copy-section-btn" data-section="description">📋 Copy</button>
               </div>
               <div id="description" class="content-text"></div>
+            </div>
+            <div id="shortDescription-section" class="content-section">
+              <div class="section-header">
+                <h3 class="section-title">Product Description</h3>
+                <button class="copy-section-btn" data-section="shortDescription">📋 Copy</button>
+              </div>
+              <div id="shortDescription" class="content-text"></div>
             </div>
 
             <!-- Features -->
@@ -160,7 +168,7 @@
           const allOption = document.querySelector('.type-option[data-type="all"]');
 
           // Hide all output sections initially
-          ["description-section", "features-section", "faqs-section", "metaTitle-section", "metaDescription-section", "bulletFeatures-section"].forEach(id => {
+          ["description-section", "shortDescription-section", "features-section", "faqs-section", "metaTitle-section", "metaDescription-section", "bulletFeatures-section"].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.style.display = "none";
           });
@@ -168,7 +176,7 @@
           if (this.dataset.type === 'all') {
             document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
             this.classList.add('active');
-            typeInput.value = JSON.stringify(['faq', 'description', 'features', 'bulletFeature', 'metaTitle', 'metaDescription']);
+            typeInput.value = JSON.stringify(['faq', 'description', 'shortDescription', 'features', 'bulletFeature', 'metaTitle', 'metaDescription']);
           } else {
             allOption.classList.remove('active');
             this.classList.toggle('active');
@@ -203,6 +211,9 @@
           switch(sectionType) {
             case 'description':
               content = document.getElementById('description')?.textContent?.trim() || '';
+              break;
+            case 'shortDescription':
+              content = document.getElementById('shortDescription')?.textContent?.trim() || '';
               break;
             case 'features':
               const features = document.getElementById('features');
@@ -304,12 +315,12 @@
           const data = await res.json();
           document.getElementById("loading-state").style.display = "none";
 
-          const { description, features, faqs, metaTitle, metaDescription, bulletFeature } = data.result || {};
+          const {description, shortDescription, features, faqs, metaTitle, metaDescription, bulletFeature} = data.result || {};
 
           let hasOutput = false;
 
           // Only show bullet features if that's the ONLY type selected
-          if (Array.isArray(bulletFeature) && bulletFeature.length > 0 && selectedType.length === 1 && selectedType[0] === 'bulletFeature') {
+          if (Array.isArray(bulletFeature) && bulletFeature.length > 0) {
             const bulletSection = document.getElementById("bulletFeatures-section");
             const ul = document.getElementById("bulletFeatures");
             ul.innerHTML = "";
@@ -327,6 +338,13 @@
             descSection.style.display = "block";
             hasOutput = true;
           }
+          if (shortDescription && (selectedType.includes('shortDescription') || selectedType[0] === 'all')) {
+            const shortDescSection = document.getElementById("shortDescription-section");
+            document.getElementById("shortDescription").textContent = shortDescription;
+            shortDescSection.style.display = "block";
+            hasOutput = true;
+          }
+
           if (Array.isArray(features) && features.length > 0 && (selectedType.includes('features') || selectedType[0] === 'all')) {
             const featSection = document.getElementById("features-section");
             const ul = document.getElementById("features");
@@ -400,6 +418,11 @@
         if (description && description.textContent) {
           content += "PRODUCT DESCRIPTION:\n\n";
           content += description.textContent + "\n\n";
+        }
+        const shortDescription = document.getElementById("shortDescription")
+        if (shortDescription && shortDescription.textContent) {
+          content += "PRODUCT SHORT DESCRIPTION:\n\n";
+          content += shortDescription.textContent + "\n\n";
         }
         
         const features = document.getElementById("features");
@@ -481,6 +504,7 @@
         console.log(data.result.description);
         console.log(data.result.features);
         console.log(data.result.faqs);
+        console.log(data.result.shortDescription);
         return content;
       }
 

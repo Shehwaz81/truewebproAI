@@ -38,7 +38,6 @@ app.post("/generate", async (req, res) => {
   }
 });
 
-// Bind to 0.0.0.0 for Render deployment
 app.listen(port, "0.0.0.0", () => {
   console.log(`OpenAI generation service running on port ${port}`);
 });
