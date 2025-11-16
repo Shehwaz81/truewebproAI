@@ -34,6 +34,7 @@
             <div class="type-option" data-type="description">Description</div>
             <div class="type-option" data-type="faq">FAQ</div>
             <div class="type-option" data-type="features">Features</div>
+            <div class="type-option" data-type="bulletFeature">Bullet Features</div>
             <div class="type-option" data-type="metaTitle">Meta Title</div>
             <div class="type-option" data-type="metaDescription">Meta Description</div>
             <div class="type-option" data-type="all">All</div>
@@ -83,6 +84,14 @@
                 <button class="copy-section-btn" data-section="features">📋 Copy</button>
               </div>
               <ul id="features" class="features-list"></ul>
+            </div>
+            <!--bulletFeatures-->
+            <div id="bulletFeatures-section" class="content-section">
+              <div class="section-header">
+                <h3 class="section-title">Key Features (Bullet)</h3>
+                <button class="copy-section-btn" data-section="features">📋 Copy</button>
+              </div>
+              <ul id="bulletFeatures" class="features-list"></ul>
             </div>
 
             <!-- FAQs -->
@@ -150,10 +159,16 @@
         option.addEventListener('click', function() {
           const allOption = document.querySelector('.type-option[data-type="all"]');
 
+          // Hide all output sections initially
+          ["description-section", "features-section", "faqs-section", "metaTitle-section", "metaDescription-section", "bulletFeatures-section"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = "none";
+          });
+
           if (this.dataset.type === 'all') {
             document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
             this.classList.add('active');
-            typeInput.value = JSON.stringify(['faq', 'description', 'features']);
+            typeInput.value = JSON.stringify(['faq', 'description', 'features', 'bulletFeature', 'metaTitle', 'metaDescription']);
           } else {
             allOption.classList.remove('active');
             this.classList.toggle('active');
@@ -180,17 +195,55 @@
         });
       });
 
-      // Copy section content
+      // Copy section content (cleaned and robust)
       document.addEventListener('click', function(e) {
         if (e.target.classList.contains('copy-section-btn')) {
           const sectionType = e.target.dataset.section;
-          const content = getSectionContentForCopy(sectionType);
-          
-          navigator.clipboard.writeText(content).then(() => {
-            const original = e.target.innerHTML;
-            e.target.innerHTML = '✓ Copied!';
-            setTimeout(() => e.target.innerHTML = original, 2000);
-          });
+          let content = '';
+          switch(sectionType) {
+            case 'description':
+              content = document.getElementById('description')?.textContent?.trim() || '';
+              break;
+            case 'features':
+              const features = document.getElementById('features');
+              if (features && features.children.length > 0) {
+                content = Array.from(features.children)
+                  .map(li => `• ${li.textContent.replace('✓', '').trim()}`)
+                  .join('\n');
+              }
+              break;
+            case 'faqs':
+              const faqs = document.getElementById('faqs');
+              if (faqs && faqs.children.length > 0) {
+                content = Array.from(faqs.children).map(faqItem => {
+                  const question = faqItem.querySelector('h4')?.textContent || '';
+                  const answer = faqItem.querySelector('p')?.textContent || '';
+                  return `Q: ${question}\nA: ${answer}`;
+                }).join('\n\n');
+              }
+              break;
+            case 'metaTitle':
+              content = document.getElementById('metaTitle')?.textContent?.trim() || '';
+              break;
+            case 'metaDescription':
+              content = document.getElementById('metaDescription')?.textContent?.trim() || '';
+              break;
+            case 'bulletFeature':
+              const bulletFeature = document.getElementById('bulletFeature');
+              if (bulletFeature && bulletFeature.children.length > 0) {
+                content = Array.from(bulletFeature.children)
+                  .map(li => `• ${li.textContent.trim()}`)
+                  .join('\n');
+              }
+              break;
+          }
+          if (content) {
+            navigator.clipboard.writeText(content).then(() => {
+              const original = e.target.innerHTML;
+              e.target.innerHTML = '✓ Copied!';
+              setTimeout(() => e.target.innerHTML = original, 2000);
+            });
+          }
         }
       });
 
@@ -221,7 +274,7 @@
         }
 
         // Reset UI
-        ["description-section", "features-section", "faqs-section", "metaTitle-section", "metaDescription-section", "error-state"].forEach(id => {
+        ["description-section", "features-section", "faqs-section", "metaTitle-section", "metaDescription-section", "bulletFeatures-section", "error-state"].forEach(id => {
           const element = document.getElementById(id);
           if (element) element.style.display = "none";
         });
@@ -251,17 +304,30 @@
           const data = await res.json();
           document.getElementById("loading-state").style.display = "none";
 
-          const { description, features, faqs, metaTitle, metaDescription } = data.result || {};
+          const { description, features, faqs, metaTitle, metaDescription, bulletFeature } = data.result || {};
 
           let hasOutput = false;
 
-          if (description) {
+          // Only show bullet features if that's the ONLY type selected
+          if (Array.isArray(bulletFeature) && bulletFeature.length > 0 && selectedType.length === 1 && selectedType[0] === 'bulletFeature') {
+            const bulletSection = document.getElementById("bulletFeatures-section");
+            const ul = document.getElementById("bulletFeatures");
+            ul.innerHTML = "";
+            bulletFeature.forEach(f => {
+              const li = document.createElement("li");
+              li.textContent = f;
+              ul.appendChild(li);
+            });
+            bulletSection.style.display = "block";
+            hasOutput = true;
+          }
+          if (description && (selectedType.includes('description') || selectedType[0] === 'all')) {
             const descSection = document.getElementById("description-section");
             document.getElementById("description").textContent = description;
             descSection.style.display = "block";
             hasOutput = true;
           }
-          if (Array.isArray(features) && features.length > 0) {
+          if (Array.isArray(features) && features.length > 0 && (selectedType.includes('features') || selectedType[0] === 'all')) {
             const featSection = document.getElementById("features-section");
             const ul = document.getElementById("features");
             ul.innerHTML = "";
@@ -273,7 +339,7 @@
             featSection.style.display = "block";
             hasOutput = true;
           }
-          if (Array.isArray(faqs) && faqs.length > 0) {
+          if (Array.isArray(faqs) && faqs.length > 0 && (selectedType.includes('faq') || selectedType[0] === 'all')) {
             const faqSection = document.getElementById("faqs-section");
             const faqDiv = document.getElementById("faqs");
             faqDiv.innerHTML = "";
@@ -295,13 +361,13 @@
             faqSection.style.display = "block";
             hasOutput = true;
           }
-          if (metaTitle) {
+          if (metaTitle && (selectedType.includes('metaTitle') || selectedType[0] === 'all')) {
             const metaTitleSection = document.getElementById("metaTitle-section");
             document.getElementById("metaTitle").textContent = metaTitle;
             metaTitleSection.style.display = "block";
             hasOutput = true;
           }
-          if (metaDescription) {
+          if (metaDescription && (selectedType.includes('metaDescription') || selectedType[0] === 'all')) {
             const metaDescSection = document.getElementById("metaDescription-section");
             document.getElementById("metaDescription").textContent = metaDescription;
             metaDescSection.style.display = "block";
@@ -330,14 +396,12 @@
       function getFormattedContentForCopy() {
         let content = "";
         
-        // Description
         const description = document.getElementById("description");
         if (description && description.textContent) {
           content += "PRODUCT DESCRIPTION:\n\n";
           content += description.textContent + "\n\n";
         }
         
-        // Features
         const features = document.getElementById("features");
         if (features && features.children.length > 0) {
           content += "KEY FEATURES:\n\n";
@@ -347,7 +411,6 @@
           content += "\n";
         }
         
-        // FAQs
         const faqs = document.getElementById("faqs");
         if (faqs && faqs.children.length > 0) {
           content += "FREQUENTLY ASKED QUESTIONS:\n\n";
@@ -359,14 +422,12 @@
           });
         }
 
-        // Meta Title
         const metaTitle = document.getElementById("metaTitle");
         if (metaTitle && metaTitle.textContent) {
           content += "META TITLE:\n\n";
           content += metaTitle.textContent + "\n\n";
         }
 
-        // Meta Description
         const metaDescription = document.getElementById("metaDescription");
         if (metaDescription && metaDescription.textContent) {
           content += "META DESCRIPTION:\n\n";
