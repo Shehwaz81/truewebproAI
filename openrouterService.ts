@@ -23,7 +23,7 @@ export const generateDescriptionAndFAQ = async (
     else if (t === 'bulletFeature') return 'bulletFeature';
     return t;
   });
-  
+  const keyword_array = keywords.split(',');
   const typeString = normalizedTypes.join(', ');
 
   const prompt = `
@@ -34,6 +34,7 @@ export const generateDescriptionAndFAQ = async (
 
     Keywords:
     ${keywords}
+    So there are ${keyword_array.length} keywords.
 
     Types requested: ${typeString}
 
@@ -47,7 +48,7 @@ export const generateDescriptionAndFAQ = async (
     Available types and their structures:
     1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases).
     2. "shortDescription": A string containing a brief description and overview of the product, features, and what it does (25-35 words). Use relevent keywords and make it sound natural.
-    3. "features": An array of feature strings (each feature around 100 words, SEO-focused).
+    3. "features": An array of feature strings. It should be 1 feature per key word. So ${keyword_array.length} features (each feature around 100 words, SEO-focused).
     4. "faqs": An array of question-answer objects (3-5 FAQs, each answer at least 40 words, address common concerns and advantages).
     5. "bulletFeature": An array of 10 short bullet features, each 10-15 words, highlighting unique selling points or benefits.
     6. "metaTitle": A string for an SEO-friendly meta title (max 60 characters, include main keyword and product name).
@@ -126,7 +127,9 @@ function buildStructureExamples(types: string[]): string {
   
   if (types.includes('features')) {
     examples.push(
-      `- If "features" is requested: {"features": ["Feature 1", "Feature 2", "Feature 3"]}. Each feature must be around 100 words`);
+      `- If "features" is requested: {"features": ["keyword Feature 1", "keyword Feature 2", "Feature 3"]}. There should be as many features as there are keywords (listed at the start}. Each feature must be around 100 words
+      REMEMBER: 1 feature per keyword. So if there are 3 keywords, thats 3 features. If there is 1 keyword, thats 1 feature you should output.
+      `);
   }
   
   if (types.includes('faqs')) {
