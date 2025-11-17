@@ -27,42 +27,42 @@ export const generateDescriptionAndFAQ = async (
   const typeString = normalizedTypes.join(', ');
 
   const prompt = `
-    You are a world-class SEO AI that generates SEO-friendly content for products.
+    You are a top-tier SEO writing AI specialized in producing SEO-friendly, human-sounding product content.
 
     Product title:
     ${productTitle}
 
     Keywords:
     ${keywords}
-    So there are ${keyword_array.length} keywords.
+    There are ${keyword_array.length} keywords provided.
 
     Types requested: ${typeString}
 
-    IMPORTANT: Generate ONLY the types listed above. Do NOT generate any types that are not in the list.
+    IMPORTANT: Produce ONLY the types listed above. Do NOT output any types not included in the list.
 
     Output instructions:
-    - ONLY output a valid JSON object.
-    - Do NOT include any Markdown formatting, code blocks, or extra text.
-    - The JSON structure should contain ONLY the keys for the requested types.
+    - Output ONLY a valid JSON object.
+    - Do NOT include Markdown, code fences, commentary, or any extra text.
+    - The JSON structure must include ONLY keys for the requested types.
 
     Available types and their structures:
-    1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases but don't split it into sections.DO NOT highlight anything or put stars around anything) Write it as one paragraph.
-    2. "shortDescription": A string containing a brief description and overview of the product, features, and what it does (25-35 words). Use relevent keywords and make it sound natural. DO NOT highlight anything or put stars around anything
-    3. "features": An array of feature strings. It should be 1 feature per key word. So ${keyword_array.length} features (each feature around 100 words, SEO-focused).
-    4. "faqs": An array of question-answer objects (EXACTLY 10 FAQs, each answer with each being 40-50 words, address common concerns and advantages).
-    5. "bulletFeature": An array of 10 short bullet features, each 10-15 words, highlighting unique selling points or benefits.
-    6. "metaTitle": A string for an SEO-friendly meta title (max 60 characters, include main keyword and product name).
-    7. "metaDescription": A string for an SEO-friendly meta description (max 160 characters, summarize value and include primary keywords).
+    1. "description": A highly SEO-optimized product description (minimum 150 words). Use relevant keywords naturally, highlight features, benefits, and use cases. Do not add section headers inside this string; keep it cohesive. Avoid emphasis characters like stars or all-caps.
+    2. "shortDescription": A concise overview of the product, its main features and purpose (25-35 words). Use relevant keywords naturally and read like normal language. Avoid emphasis characters.
+    3. "features": An array of feature strings. Provide exactly one feature per keyword, so ${keyword_array.length} features in total. Each feature should be focused, around 80-120 words, and SEO-conscious.
+    4. "faqs": An array of question-answer objects (EXACTLY 10 FAQs). Each answer must be 40-50 words and address common user concerns and advantages in clear language.
+    5. "bulletFeature": An array of 10 concise bullet features, each 10-15 words, clearly highlighting selling points or benefits.
+    6. "metaTitle": A single SEO-friendly meta title (max 60 characters) that includes the main keyword and product name.
+    7. "metaDescription": A single SEO-friendly meta description (max 160 characters) summarizing value and including primary keywords.
     ${buildStructureExamples(normalizedTypes)}
 
     Generate content for EXACTLY these types: ${typeString}
     Do not include any other types in your output.
-    Tone: Use a conversational, friendly tone. Write like a human talking to another human, not like a machine. Use short sentences and everyday language.
-    Section structure: Structure the description into sections: Introduction, Features & Benefits, How it helps the customer, and Closing. Make each section clear and readable.
-    Keyword usage: Include keywords naturally in sentences. Do NOT overstuff keywords or make sentences awkward.
+    Tone: Use a conversational, friendly tone. Write like a human speaking to another human. Use short sentences and clear everyday language.
+    Section structure guidance: When producing the description, prefer clear micro-sections (Introduction, Features & Benefits, How it helps the customer, Closing) if sections are requested. Otherwise produce a cohesive single-paragraph description. Make content readable and scannable.
+    Keyword usage: Include keywords naturally and target user intent for search. Do NOT keyword-stuff or produce awkward phrasing.
     Formatting:
-    - Use clear keys for each section: description, features, faqs, bulletFeature, metaTitle, metaDescription.
-    - Ensure content is SIMPLE and ORIGINAL. Make sure it is not too advance for a human to read.
+    - Use clear keys matching requested types: description, features, faqs, bulletFeature, metaTitle, metaDescription.
+    - Ensure content is SIMPLE, ORIGINAL, and accessible. Avoid advanced jargon and keep
   `;
 
   try {
