@@ -46,8 +46,8 @@ export const generateDescriptionAndFAQ = async (
     - The JSON structure should contain ONLY the keys for the requested types.
 
     Available types and their structures:
-    1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases but don't split it into sections. Write it as one paragraph).
-    2. "shortDescription": A string containing a brief description and overview of the product, features, and what it does (25-35 words). Use relevent keywords and make it sound natural.
+    1. "description": A string containing a highly SEO-optimized product description (minimum 150 words, use relevant keywords naturally, highlight features, benefits, and use cases but don't split it into sections.DO NOT highlight anything or put stars around anything) Write it as one paragraph.
+    2. "shortDescription": A string containing a brief description and overview of the product, features, and what it does (25-35 words). Use relevent keywords and make it sound natural. DO NOT highlight anything or put stars around anything
     3. "features": An array of feature strings. It should be 1 feature per key word. So ${keyword_array.length} features (each feature around 100 words, SEO-focused).
     4. "faqs": An array of question-answer objects (EXACTLY 10 FAQs, each answer with each being 40-50 words, address common concerns and advantages).
     5. "bulletFeature": An array of 10 short bullet features, each 10-15 words, highlighting unique selling points or benefits.
